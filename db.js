@@ -13,6 +13,7 @@ const Todo = new Schema({
   userId: ObjectId,
   title: String,
   done: Boolean,
+  createTime: String,
 });
 
 const UserModel = mongoose.model("users", User);

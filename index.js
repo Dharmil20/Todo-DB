@@ -71,10 +71,10 @@ function auth(req, res, next) {
   }
 }
 
-app.post("/todo", auth, async(req, res) => {
+app.post("/todo", auth, async (req, res) => {
   const title = req.body.title;
   const done = req.body.done;
-
+  const date = new Date();
   try {
     const todo = await TodoModel.findOne({
       title: title,
@@ -86,6 +86,7 @@ app.post("/todo", auth, async(req, res) => {
         userId: req.userId,
         title: title,
         done: done,
+        createTime: date.toString(),
       });
       res.json({
         message: "Todo Created",
@@ -102,22 +103,49 @@ app.post("/todo", auth, async(req, res) => {
   }
 });
 
-app.get("/todos", auth, async(req, res) => {
+app.get("/todos", auth, async (req, res) => {
   const userId = req.userId;
-  try{
+  try {
     const todos = await TodoModel.find({
-      userId
-    })
-  
-    res.json({
-      todos
-    })
-  } catch{
-    res.json({
-      message: "Invalid Token Provided"
-    })
-  }
+      userId,
+    });
 
+    res.json({
+      todos,
+    });
+  } catch {
+    res.json({
+      message: "Invalid Token Provided",
+    });
+  }
+});
+
+app.post("/done", async (req, res) => {
+  const todoId = req.body.todoId;
+  try {
+    const todoFound = await TodoModel.findOne({
+      _id: todoId,
+    });
+
+    if (todoFound) {
+      await TodoModel.updateOne(
+        {
+          _id: todoId,
+        },
+        {
+          done: true,
+        }
+      );
+
+      res.json({
+        message: "Todo marked as done",
+      });
+    }
+  } catch {
+    res.json({
+      message: "Todo not Found",
+    });
+  }
 });
 
 app.listen(3000);
