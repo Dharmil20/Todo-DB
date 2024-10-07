@@ -9,7 +9,7 @@ const { z } = require("zod");
 const app = express();
 
 mongoose.connect(
-  "mongodb+srv://dharmiltrivedi5:4BTC5fjyuZX1zCjj@cluster0.nqozu.mongodb.net/todo-app-database"
+  ""
 );
 app.use(express.json());
 
