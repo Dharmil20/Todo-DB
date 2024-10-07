@@ -9,7 +9,7 @@ const { z } = require("zod");
 const app = express();
 
 mongoose.connect(
-  ""
+  "mongodb+srv://dharmiltrivedi5:4BTC5fjyuZX1zCjj@cluster0.nqozu.mongodb.net/todo-app-database"
 );
 app.use(express.json());
 
@@ -176,6 +176,31 @@ app.post("/done", async (req, res) => {
 
       res.json({
         message: "Todo marked as done",
+      });
+    }
+  } catch {
+    res.json({
+      message: "Todo not Found",
+    });
+  }
+});
+
+app.post("/deleteTodo", async (req, res) => {
+  const todoId = req.body.todoId;
+  try {
+    const todoFound = await TodoModel.findOne({
+      _id: todoId,
+    });
+
+    if (todoFound) {
+      await TodoModel.deleteOne(
+        {
+          _id: todoId,
+        },
+      );
+
+      res.json({
+        message: "Todo Deleted",
       });
     }
   } catch {
