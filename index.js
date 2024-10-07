@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const express = require("express");
 const { UserModel, TodoModel } = require("./db");
 const jwt = require("jsonwebtoken");
@@ -14,10 +15,13 @@ app.post("/signup", async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const name = req.body.name;
+
+  const hashedPassword = await bcrypt.hash(password, 5);
+  //We use the Promisified approach so we dont need to add the callback function as a 3rd argument
   try {
     await UserModel.create({
       email: email,
-      password: password,
+      password: hashedPassword,
       name: name,
     });
 
@@ -37,10 +41,18 @@ app.post("/login", async (req, res) => {
 
   const user = await UserModel.findOne({
     email: email,
-    password: password,
   });
 
-  if (user) {
+  if (!user) {
+    res.status(403).json({
+      message: "User Not Found",
+    });
+    return;
+  }
+
+  const passwordMatch = await bcrypt.compare(password, user.password);
+  // if(promise) is always true
+  if (passwordMatch) {
     const token = jwt.sign(
       {
         id: user._id.toString(),
