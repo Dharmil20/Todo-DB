@@ -4,6 +4,8 @@ const { UserModel, TodoModel } = require("./db");
 const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
 const JWT_SECRET = "randomdharmillovescoding";
+const { z } = require("zod");
+
 const app = express();
 
 mongoose.connect(
@@ -12,6 +14,29 @@ mongoose.connect(
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
+  const requiredBody = z.object({
+    email: z.string().min(3).max(100).email(),
+    name: z.string().min(3).max(100),
+    password: z
+      .string()
+      .min(8)
+      .max(30)
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,30}$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+      ),
+  });
+
+  const parsedDataWithSuccess = requiredBody.safeParse(req.body);
+
+  if (!parsedDataWithSuccess.success) {
+    res.json({
+      message: "Incorrect Format",
+      error: parsedDataWithSuccess.error,
+    });
+    return;
+  }
+
   const email = req.body.email;
   const password = req.body.password;
   const name = req.body.name;
